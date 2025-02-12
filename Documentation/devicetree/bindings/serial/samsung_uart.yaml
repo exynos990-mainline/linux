@@ -28,6 +28,7 @@ properties:
           - samsung,exynos5433-uart
           - samsung,exynos850-uart
           - samsung,exynos8895-uart
+          - samsung,exynos990-uart
       - items:
           - enum:
               - samsung,exynos7-uart
@@ -42,6 +43,10 @@ properties:
               - samsung,exynosautov9-uart
               - samsung,exynosautov920-uart
           - const: samsung,exynos850-uart
+      - items:
+          - enum:
+              - samsung,exynos990-uart
+          - const: samsung,exynos8895-uart
 
   reg:
     maxItems: 1
@@ -162,6 +167,7 @@ allOf:
             enum:
               - google,gs101-uart
               - samsung,exynos8895-uart
+              - samsung,exynos990-uart
     then:
       required:
         - samsung,uart-fifosize
