@@ -168,6 +168,18 @@
 		method = "hvc";
 	};
 
+	fixed-rate-clocks {
+		/*
+		 * Keep the stub clock for ufs driver, until proper clock
+		 * driver is implemented.
+		 */
+		ufs_core_clock: ufs-core-clock {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <166562500>;
+		};
+	};
+
 	soc: soc@0 {
 		compatible = "simple-bus";
 		ranges = <0x0 0x0 0x0 0x20000000>;
@@ -254,10 +266,47 @@
 				      "dpgtc";
 		};
 
+		sysreg_hsi1: sysreg@13020000 {
+			compatible = "samsung,exynosautov9-fsys2-sysreg",
+				     "samsung,exynosautov9-sysreg", "syscon";
+			reg = <0x13020000 0x1000>;
+		};
+
 		pinctrl_hsi1: pinctrl@13040000 {
 			compatible = "samsung,exynos990-pinctrl";
 			reg = <0x13040000 0x1000>;
 			interrupts = <GIC_SPI 312 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		ufs_0: ufs@13100000 {
+			compatible = "samsung,exynosautov9-ufs";
+			reg = <0x13100000 0x200>,
+			      <0x13101100 0x200>,
+			      <0x13180000 0x8000>,
+			      <0x132a0000 0x100>;
+			reg-names = "hci", "vs_hci", "unipro", "ufsp";
+			interrupts = <GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ufs_core_clock>,
+				<&ufs_core_clock>;
+			clock-names = "core_clk", "sclk_unipro_main";
+			freq-table-hz = <0 0>, <0 0>;
+			pinctrl-0 = <&ufs_rst_n &ufs_refclk_out>;
+			pinctrl-names = "default";
+			phys = <&ufs_0_phy>;
+			phy-names = "ufs-phy";
+			samsung,sysreg = <&sysreg_hsi1 0x700>;
+			status = "okay";
+		};
+
+		ufs_0_phy: phy@13104000 {
+			compatible = "samsung,exynos990-ufs-phy";
+			reg = <0x13104000 0x3000>;
+			reg-names = "phy-pma";
+			samsung,pmu-syscon = <&pmu_system_controller>;
+			#phy-cells = <0>;
+			clocks = <&oscclk>;
+			clock-names = "ref_clk";
+			status = "okay";
 		};
 
 		pinctrl_hsi2: pinctrl@13c30000 {

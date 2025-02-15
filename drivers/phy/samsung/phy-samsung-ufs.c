@@ -249,6 +249,8 @@ static int samsung_ufs_phy_probe(struct platform_device *pdev)
 	u32 isol_offset;
 	int err = 0;
 
+	printk("--------------------------------------UFS PHY PROBE----------------------------------\n");
+
 	match = of_match_node(samsung_ufs_phy_match, dev->of_node);
 	if (!match) {
 		err = -EINVAL;
@@ -326,6 +328,9 @@ static const struct of_device_id samsung_ufs_phy_match[] = {
 	}, {
 		.compatible = "samsung,exynosautov920-ufs-phy",
 		.data = &exynosautov920_ufs_phy,
+	}, {
+		.compatible = "samsung,exynos990-ufs-phy",
+		.data = &exynos990_ufs_phy,
 	}, {
 		.compatible = "tesla,fsd-ufs-phy",
 		.data = &fsd_ufs_phy,

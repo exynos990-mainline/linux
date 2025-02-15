@@ -301,8 +301,7 @@ static int exynosauto_ufs_pre_link(struct exynos_ufs *ufs)
 	ufshcd_dme_set(hba, UIC_ARG_MIB(0x200), 0x0);
 
 	ufshcd_dme_set(hba, UIC_ARG_MIB(PA_LOCAL_TX_LCC_ENABLE), 0x0);
-
-	ufshcd_dme_set(hba, UIC_ARG_MIB(0xa011), 0x8000);
+	//ufshcd_dme_set(hba, UIC_ARG_MIB(0xa011), 0x8000);
 
 	return 0;
 }
@@ -408,6 +407,59 @@ static int exynos7_ufs_post_pwr_change(struct exynos_ufs *ufs,
 		ufshcd_dme_set(hba, UIC_ARG_MIB(PA_CONNECTEDTXDATALANES), 0x1);
 		exynos_ufs_disable_dbg_mode(hba);
 	}
+
+	return 0;
+}
+
+static int exynos990_ufs_pre_link(struct exynos_ufs *ufs)
+{
+	struct ufs_hba *hba = ufs->hba;
+	int i;
+	u32 tx_line_reset_period, rx_line_reset_period;
+
+	rx_line_reset_period = (RX_LINE_RESET_TIME * ufs->mclk_rate)
+				/ NSEC_PER_MSEC;
+	tx_line_reset_period = (TX_LINE_RESET_TIME * ufs->mclk_rate)
+				/ NSEC_PER_MSEC;
+	return 0;
+	ufshcd_dme_set(hba, UIC_ARG_MIB(0x200), 0x40);
+	for_each_ufs_rx_lane(ufs, i) {
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_RX_CLK_PRD, i),
+			       DIV_ROUND_UP(NSEC_PER_SEC, ufs->mclk_rate));
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_RX_CLK_PRD_EN, i), 0x0);
+
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_RX_LINERESET_VALUE2, i),
+			       (rx_line_reset_period >> 16) & 0xFF);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_RX_LINERESET_VALUE1, i),
+			       (rx_line_reset_period >> 8) & 0xFF);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_RX_LINERESET_VALUE0, i),
+			       (rx_line_reset_period) & 0xFF);
+
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(0x2f, i), 0x79);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(0x84, i), 0x1);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(0x25, i), 0xf6);
+	}
+
+	for_each_ufs_tx_lane(ufs, i) {
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_TX_CLK_PRD, i),
+			       DIV_ROUND_UP(NSEC_PER_SEC, ufs->mclk_rate));
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_TX_CLK_PRD_EN, i),
+			       0x02);
+
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_TX_LINERESET_PVALUE2, i),
+			       (tx_line_reset_period >> 16) & 0xFF);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_TX_LINERESET_PVALUE1, i),
+			       (tx_line_reset_period >> 8) & 0xFF);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_TX_LINERESET_PVALUE0, i),
+			       (tx_line_reset_period) & 0xFF);
+		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(0x04, i), 0x1);
+	}
+
+	ufshcd_dme_set(hba, UIC_ARG_MIB(0x200), 0x0);
+
+	ufshcd_dme_set(hba, UIC_ARG_MIB(PA_LOCAL_TX_LCC_ENABLE), 0x0);
+
+	ufshcd_dme_set(hba, UIC_ARG_MIB(0xa011), 0x8000);
 
 	return 0;
 }
@@ -1869,6 +1921,7 @@ static int gs101_ufs_pre_link(struct exynos_ufs *ufs)
 	tx_line_reset_period = (TX_LINE_RESET_TIME * ufs->mclk_rate)
 				/ NSEC_PER_MSEC;
 
+	printk("UFS PRE\n");
 	unipro_writel(ufs, get_mclk_period_unipro_18(ufs), COMP_CLK_PERIOD);
 
 	ufshcd_dme_set(hba, UIC_ARG_MIB(0x200), 0x40);
@@ -1888,6 +1941,8 @@ static int gs101_ufs_pre_link(struct exynos_ufs *ufs)
 		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(0x25, i), 0xf6);
 	}
 
+	printk("UFS RX SETUP\n");
+
 	for_each_ufs_tx_lane(ufs, i) {
 		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(VND_TX_CLK_PRD, i),
 			       DIV_ROUND_UP(NSEC_PER_SEC, ufs->mclk_rate));
@@ -1903,6 +1958,8 @@ static int gs101_ufs_pre_link(struct exynos_ufs *ufs)
 		ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(0x7F, i), 0);
 	}
 
+	printk("UFS TX SETUP\n");
+
 	ufshcd_dme_set(hba, UIC_ARG_MIB(0x200), 0x0);
 	ufshcd_dme_set(hba, UIC_ARG_MIB(PA_LOCAL_TX_LCC_ENABLE), 0x0);
 	ufshcd_dme_set(hba, UIC_ARG_MIB(N_DEVICEID), 0x0);
@@ -1910,6 +1967,7 @@ static int gs101_ufs_pre_link(struct exynos_ufs *ufs)
 	ufshcd_dme_set(hba, UIC_ARG_MIB(T_PEERDEVICEID), 0x1);
 	ufshcd_dme_set(hba, UIC_ARG_MIB(T_CONNECTIONSTATE), CPORT_CONNECTED);
 	ufshcd_dme_set(hba, UIC_ARG_MIB(0xA006), 0x8000);
+	printk("UFS MISC SETUP\n");
 
 	return 0;
 }
@@ -2034,11 +2092,12 @@ static const struct exynos_ufs_drv_data exynosauto_ufs_drvs = {
 				  UFSHCD_QUIRK_SKIP_DEF_UNIPRO_TIMEOUT_SETTING,
 	.opts			= EXYNOS_UFS_OPT_BROKEN_AUTO_CLK_CTRL |
 				  EXYNOS_UFS_OPT_SKIP_CONFIG_PHY_ATTR |
+				  EXYNOS_UFS_OPT_UFSPR_SECURE |
 				  EXYNOS_UFS_OPT_BROKEN_RX_SEL_IDX,
 	.drv_init		= exynosauto_ufs_drv_init,
 	.post_hce_enable	= exynosauto_ufs_post_hce_enable,
-	.pre_link		= exynosauto_ufs_pre_link,
-	.pre_pwr_change		= exynosauto_ufs_pre_pwr_change,
+	.pre_link		= exynos990_ufs_pre_link,
+	// .pre_pwr_change		= exynosauto_ufs_pre_pwr_change, BROKEN
 	.post_pwr_change	= exynosauto_ufs_post_pwr_change,
 };
 
