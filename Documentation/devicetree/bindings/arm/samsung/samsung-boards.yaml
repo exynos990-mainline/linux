@@ -257,6 +257,7 @@ properties:
               - samsung,r8s                     # Samsung Galaxy S20 FE (SM-G780F)
               - samsung,x1s                     # Samsung Galaxy S20 5G (SM-G981B)
               - samsung,x1slte                  # Samsung Galaxy S20 (SM-G980F)
+              - samsung,z3s                     # Samsung Galaxy S20 Ultra 5G (SM-G988B)
           - const: samsung,exynos990
 
       - description: Exynos Auto v9 based boards
