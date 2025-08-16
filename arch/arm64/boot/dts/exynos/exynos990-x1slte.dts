@@ -6,7 +6,7 @@
  */
 
 /dts-v1/;
-#include "exynos990-x1s-common.dtsi"
+#include "exynos990-hubble-common.dtsi"
 
 / {
 	#address-cells = <2>;
