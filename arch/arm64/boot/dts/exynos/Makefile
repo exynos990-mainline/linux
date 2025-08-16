@@ -17,5 +17,6 @@ dtb-$(CONFIG_ARCH_EXYNOS) += \
 	exynos990-r8s.dtb               \
 	exynos990-x1s.dtb		\
 	exynos990-x1slte.dtb		\
+	exynos990-z3s.dtb		\
 	exynosautov9-sadk.dtb		\
 	exynosautov920-sadk.dtb
